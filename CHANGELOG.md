@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.1]
+### Fixed
+- HACS country codes set to Tibber market countries.
+
 ## [0.3.0]
 ### Added
 - New Tibber Pulse icons for Home Assistant Brands integration.
