@@ -2,7 +2,7 @@
 
 ## [0.3.1]
 ### Fixed
-- HACS country codes set to Tibber market countries.
+- HACS country removed.
 
 ## [0.3.0]
 ### Added
