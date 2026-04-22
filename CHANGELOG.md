@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.2]
+### Changed
+- Documentation updates only
+  - Updated HACS installation instructions now that the integration is an official HACS repository
+  - Added detailed, self-contained instructions for configuring Tibber Pulse and bridging MQTT traffic to Tibber Cloud
+
+> Note: This release contains documentation changes only. No code changes.
+
 ## [0.3.1]
 ### Fixed
 - HACS country removed.
