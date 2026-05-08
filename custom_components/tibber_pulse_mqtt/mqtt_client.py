@@ -145,6 +145,7 @@ class ExternalMQTTClient:
 
     def __init__(
         self,
+        hass,
         host: str,
         port: int,
         topic: str,
@@ -159,6 +160,7 @@ class ExternalMQTTClient:
         tls_insecure: bool = False,
         tls_version: str = "tlsv1.2",
     ):
+        self.hass = hass
         self.host, self.port = host, port
         self.topic = topic
         self.cb = cb
@@ -211,13 +213,41 @@ class ExternalMQTTClient:
         _debug_log_rx("Ext MQTT", msg.topic, payload, self._debug)
 
         try:
-            self.cb(msg.topic, payload)
+            self.hass.loop.call_soon_threadsafe(
+                    self._dispatch,
+                    msg.topic,
+                    payload,
+                )
         except Exception as e:
             _LOGGER.exception("Callback error: %s", e)
 
+    def _dispatch(self, topic, payload):
+        self.cb(topic, payload)
 
     def start(self):
-        self._client.connect(self.host, self.port, keepalive=60)
+        if self.host is None:
+            raise ValueError("MQTT host is None")
+
+        try:
+            host = str(self.host).strip()
+        except Exception:
+            raise ValueError(f"Invalid MQTT host: {self.host!r}")
+
+        if not host:
+            raise ValueError("MQTT host is empty")
+
+        if not isinstance(self.port, (int, float, str)):
+            raise ValueError(f"Invalid MQTT port type: {self.port!r}")
+
+        try:
+            port = int(self.port)
+        except (TypeError, ValueError):
+            raise ValueError(f"Invalid MQTT port value: {self.port!r}")
+
+        if not (1 <= port <= 65535):
+            raise ValueError(f"MQTT port out of range: {port}")
+
+        self._client.connect(host, port, keepalive=60)
         self._thread = threading.Thread(target=self._client.loop_forever, daemon=True)
         self._thread.start()
 
