@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.3]
+### Fixed
+- Fixed External MQTT connection crashes with
+  `OSError: Int or String expected` caused by invalid or improperly saved
+  host/port values. (#9)
+- Fixed crash when receiving MQTT messages due to callbacks being handled
+  from the MQTT thread instead of the Home Assistant event loop.
+
+### Improved
+- MQTT host is now validated and normalized before connecting.
+- MQTT port is now safely converted to an integer (handles values like `1883.0`).
+- ExternalMQTTClient now correctly uses the Home Assistant event loop when
+  dispatching incoming messages.
+
 ## [0.3.2]
 ### Changed
 - Documentation updates only

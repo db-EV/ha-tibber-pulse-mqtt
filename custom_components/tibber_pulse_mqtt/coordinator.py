@@ -35,6 +35,7 @@ class TibberLocalHub:
             _LOGGER.info("Tibber Pulse MQTT listening via HA MQTT on %s", topic)
         else:
             self._ext_mqtt = ExternalMQTTClient(
+                hass=self.hass,
                 host=self.cfg.get(CONF_HOST, "127.0.0.1"),
                 port=self.cfg.get(CONF_PORT, DEFAULT_PORT),
                 topic=topic,
