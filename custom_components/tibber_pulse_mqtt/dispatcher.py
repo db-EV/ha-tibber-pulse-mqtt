@@ -229,6 +229,7 @@ class TibberDispatcher:
             if self.debug:
                 try:
                     cand = pick_best_candidate_from_blob(blob)
+                    if cand:
                     _LOGGER.debug(
                         "Envelope blob best-candidate len=%d head=%s",
                         len(cand),
