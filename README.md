@@ -14,7 +14,9 @@ For Tibber pulse IR devices, have a look at [marq24/ha-tibber-pulse-local](https
   - TLS with client certificate + private key
 - Dynamic entity creation: only OBIS codes actually observed are added
 - Multiple language translation modules
-- Robust binary parser: protobuf wire + zlib
+- Robust binary parsers:
+  - Protobuf + zlib (P1 / DSMR)
+  - DLMS/COSEM DataNotification (HAN meters)
 
 ## HACS Installation
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=mrhedstrom&repository=ha-tibber-pulse-mqtt)
@@ -314,10 +316,21 @@ Supported languages
 ## Protobuf
 We use the official protobuf library to parse wire format generically and extract the compressed payload. An experimental pulse.proto is included for reference; the integration does not depend on a compiled .pb2 file at runtime.
 
+
 ## Notes
-If your device emits zlib-compressed OBIS text, it will be parsed as such.
-If your device uses a proprietary binary layout after zlib, a fallback parser is included but not used; please share sample frames to improve decoding tables. This has only been developed using Pulse P1 and has not seen other models messages. The models P1, HAN, KM, should follow the same protocols since they are in the same product family and share common hardware.
+The integration supports multiple data formats used by different Tibber Pulse variants.
+
+- Devices such as Pulse P1 typically emit protobuf-encapsulated data with zlib-compressed OBIS payloads.
+- Sometimes sensors such as Pulse P1 emits raw OBIS payloads.
+- HAN devices (e.g. Aidon V2) use DLMS/COSEM and provide OBIS values directly in binary DataNotification messages.
+
+Both formats are automatically detected and decoded.
+
+While Pulse devices share common hardware, the data encoding can differ depending on meter type and firmware. Support has primarily been tested with P1 and HAN devices. If your device uses a different format, please share sample frames to help improve decoding support.
 
 ## Credits
 Tibber Pulse community work and formats  
-MSkjel/LocalPulse2Tibber for the clear AWS bridge configuration and cert extraction guidance https://github.com/MSkjel/LocalPulse2Tibber
+MSkjel/LocalPulse2Tibber for the clear AWS bridge configuration and cert extraction guidance 
+https://github.com/MSkjel/LocalPulse2Tibber
+
+@JBerts for implementing DLMS/COSEM (HAN) support

@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.0]
+### Added
+- Initial DLMS/COSEM (HAN) support.
+  - Supports Tibber Pulse HAN meters (e.g. Aidon V2).
+  - Adds a new decoding path for DLMS/COSEM DataNotification messages.
+  - Enables extraction of OBIS values including scaler and unit handling.
+
+### Changed
+- Decoder pipeline extended to support multiple data formats (P1 and HAN).
+
+### Thanks
+- Thanks to @JBerts for the DLMS/COSEM implementation.
+
+### Testing
+- Verified with P1 devices without regressions.
+
 ## [0.3.3]
 ### Fixed
 - Fixed External MQTT connection crashes with
