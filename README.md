@@ -333,4 +333,4 @@ Tibber Pulse community work and formats
 MSkjel/LocalPulse2Tibber for the clear AWS bridge configuration and cert extraction guidance 
 https://github.com/MSkjel/LocalPulse2Tibber
 
-@JBerts for implementing DLMS/COSEM (HAN) support
+[@JBerts](https://github.com/JBerts) for implementing DLMS/COSEM (HAN) support and enabling compatibility with additional Tibber Pulse variants
