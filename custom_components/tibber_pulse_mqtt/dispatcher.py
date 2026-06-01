@@ -17,6 +17,7 @@ except Exception:
 
 from .parsers.pulse_envelope import pick_best_candidate_from_blob
 from .parsers.obis_text import parse_obis_text
+from .parsers.dlms_cosem import parse_dlms_cosem, find_dlms_frame_in_blob
 
 from .obis.streaming import ObisStreamManager
 from .util.diagnostics import DiagnosticsRegistry
@@ -226,14 +227,28 @@ class TibberDispatcher:
             blob = None
 
         if blob:
+            # DLMS/COSEM binary path (Aidon V2 and similar HAN meters).
+            # Checked before feed_blob to avoid wasted deflate attempts on binary frames.
+            hdlc_frame = find_dlms_frame_in_blob(blob)
+            if hdlc_frame:
+                try:
+                    obis = parse_dlms_cosem(hdlc_frame)
+                    if obis:
+                        self.hass.loop.call_soon_threadsafe(self._apply_obis, dev_id, obis)
+                        self._diag.bump(dev_id, True, topic=topic, payload=payload, offset=None, had_blob=True, zerr=None)
+                        return
+                except Exception:
+                    pass
+
             if self.debug:
                 try:
                     cand = pick_best_candidate_from_blob(blob)
-                    _LOGGER.debug(
-                        "Envelope blob best-candidate len=%d head=%s",
-                        len(cand),
-                        cand[:16].hex()
-                    )
+                    if cand:
+                        _LOGGER.debug(
+                            "Envelope blob best-candidate len=%d head=%s",
+                            len(cand),
+                            cand[:16].hex()
+                        )
                 except Exception as exc:
                     _LOGGER.debug("Error picking candidate: %s", exc)
 
