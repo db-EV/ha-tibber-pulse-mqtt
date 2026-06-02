@@ -1,7 +1,9 @@
 # Home Assistant Tibber Pulse (P1, HAN, KM) MQTT integration
 Local MQTT integration for Tibber Pulse devices (P1, HAN, KM). Decodes compressed protobuf envelopes, parses OBIS data, and exposes real‑time **native HA sensor entities** in Home Assistant (no MQTT Discovery, no extra topics, no cloud dependencies). Supports multiple Pulse devices. Can also be forwarded to Tibber Cloud via an external MQTT bridge to keep data in both HA and Tibber.
 
-Support development at [![PayPal](https://img.shields.io/badge/PayPal-003087?logo=paypal&logoColor=white)](https://paypal.me/mrhedstrom1)
+Support development at  
+[![PayPal](https://img.shields.io/badge/PayPal-003087?logo=paypal&logoColor=white)](https://paypal.me/mrhedstrom1)  
+[![Swish](images/swish-tibber-pulse-mqtt-qronly.png)](https://app.swish.nu/1/p/sw/?sw=0704542533&cur=SEK&msg=Tibber%20Pulse%20MQTT&edit=amt,msg&src=qr)
 
 For Tibber pulse IR devices, have a look at [marq24/ha-tibber-pulse-local](https://github.com/marq24/ha-tibber-pulse-local)
 
@@ -243,7 +245,7 @@ If you only need local MQTT, follow only the steps below to configure Tibber Pul
      `tibber-pulse-<your device id>/receive`
    * For firmware updates, enter your saved **update_url**, for example:  
      `https://iot.tibber.com/devices/<your device id>/firmware`
-5. Save and reboot
+5. Save and reboot  
    Save the configuration and allow the Tibber Pulse to reboot and connect to your local network.
 12. Verify successful configuration  
     After a short while, the page should change to an almost empty screen with a short string of characters at the top.   
@@ -329,8 +331,9 @@ Both formats are automatically detected and decoded.
 While Pulse devices share common hardware, the data encoding can differ depending on meter type and firmware. Support has primarily been tested with P1 and HAN devices. If your device uses a different format, please share sample frames to help improve decoding support.
 
 ## Credits
-Tibber Pulse community work and formats  
-MSkjel/LocalPulse2Tibber for the clear AWS bridge configuration and cert extraction guidance 
+Tibber Pulse community work and formats
+
+[@MSkjel](https://github.com/MSkjel) for the clear AWS bridge configuration and cert extraction guidance 
 https://github.com/MSkjel/LocalPulse2Tibber
 
 [@JBerts](https://github.com/JBerts) for implementing DLMS/COSEM (HAN) support and enabling compatibility with additional Tibber Pulse variants
