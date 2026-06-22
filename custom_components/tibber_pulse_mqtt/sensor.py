@@ -268,6 +268,8 @@ class TibberSensor(SensorEntity):
 
     def _schedule_state_write(self):
         """Schedule async_write_ha_state on the HA event loop thread-safely."""
+        if not self.enabled:
+            return
         if getattr(self, "hass", None):
             loop = self.hass.loop
             try:
