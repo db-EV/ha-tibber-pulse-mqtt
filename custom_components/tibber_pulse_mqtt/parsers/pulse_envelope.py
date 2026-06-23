@@ -251,3 +251,114 @@ def pick_best_candidate_from_blob(blob: bytes) -> bytes | None:
         if r is not None:
             return cand
     return best
+
+# -------------------------
+# Multi-chunk stream decoder
+# -------------------------
+
+def _read_varint_simple(buf: bytes, pos: int):
+    """Simple varint reader for the multi-chunk decoder."""
+    result, shift = 0, 0
+    while pos < len(buf):
+        b = buf[pos]; pos += 1
+        result |= (b & 0x7F) << shift
+        if not (b & 0x80):
+            return result, pos
+        shift += 7
+    raise ValueError("unexpected EOF in varint")
+
+def _read_field_simple(buf: bytes, pos: int):
+    """Read one protobuf field. Returns (field_number, wire_type, value, new_pos) or None."""
+    if pos >= len(buf):
+        return None
+    try:
+        tag, pos = _read_varint_simple(buf, pos)
+    except ValueError:
+        return None
+    wt, fn = tag & 7, tag >> 3
+    try:
+        if wt == 0:
+            v, pos = _read_varint_simple(buf, pos)
+            return fn, wt, v, pos
+        elif wt == 1:
+            return fn, wt, buf[pos:pos + 8], pos + 8
+        elif wt == 2:
+            length, pos = _read_varint_simple(buf, pos)
+            return fn, wt, buf[pos:pos + length], pos + length
+        elif wt == 5:
+            return fn, wt, buf[pos:pos + 4], pos + 4
+    except Exception:
+        return None
+    return None
+
+
+def decode_multi_chunk_stream(payload: bytes) -> Optional[bytes]:
+    """
+    Decode a Tibber Pulse P1 MQTT payload that uses a multi-chunk Zlib stream.
+    Returns the decompressed OBIS plaintext, or None if decoding fails.
+    """
+    # Step 1: Collect all outer Field-2 chunks (the repeated blobs)
+    outer_chunks = []
+    pos = 0
+    while pos < len(payload):
+        field = _read_field_simple(payload, pos)
+        if field is None:
+            break
+        fn, wt, val, pos = field
+        if wt == 2:
+            outer_chunks.append(val)
+
+    if not outer_chunks:
+        return None
+
+    # Step 2: From each chunk extract the Zlib fragment (Field 3, not "P1")
+    zlib_fragments = []
+    for chunk in outer_chunks:
+        if b"P1" not in chunk:
+            continue
+        cpos = 0
+        while cpos < len(chunk):
+            field = _read_field_simple(chunk, cpos)
+            if field is None:
+                break
+            fn, wt, val, cpos = field
+            # Field 3 is the Zlib fragment; Field 2 = "P1" string is skipped
+            if wt == 2 and val != b"P1":
+                zlib_fragments.append(val)
+
+    if not zlib_fragments:
+        return None
+
+    if len(zlib_fragments) < 2:
+        return None
+
+    # Step 3: Combine all fragments and decompress as one Zlib stream
+    combined = b"".join(zlib_fragments)
+    try:
+        d = zlib.decompressobj(wbits=15)
+        out = d.decompress(combined)
+        out += d.flush()
+        if out:
+            return out
+    except Exception as exc:
+        _LOGGER.debug("decode_multi_chunk_stream: zlib failed: %s", exc)
+
+    return None
+
+
+def split_obis_frames(buf: bytes) -> list[bytes]:
+    """
+    Split a decompressed byte buffer into individual OBIS telegrams.
+    """
+    frames: list[bytes] = []
+    b = bytearray(buf)
+    while True:
+        start = b.find(b"/")
+        if start < 0:
+            break
+        end = b.find(b"!", start + 1)
+        if end < 0:
+            break
+        frames.append(bytes(b[start:end + 1]))
+        del b[:end + 1]
+    return frames

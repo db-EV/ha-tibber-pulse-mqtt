@@ -15,7 +15,7 @@ try:
 except Exception:
     pulse_pb2 = None
 
-from .parsers.pulse_envelope import pick_best_candidate_from_blob
+from .parsers.pulse_envelope import pick_best_candidate_from_blob, decode_multi_chunk_stream, split_obis_frames
 from .parsers.obis_text import parse_obis_text
 from .parsers.dlms_cosem import parse_dlms_cosem, find_dlms_frame_in_blob
 
@@ -239,6 +239,24 @@ class TibberDispatcher:
                         return
                 except Exception:
                     pass
+
+            multi_text = decode_multi_chunk_stream(payload)
+            if multi_text:
+                obis_frames = split_obis_frames(multi_text)
+                any_ok = False
+                for frame in obis_frames:
+                    obis = parse_obis_text(frame.decode("utf-8", errors="ignore"))
+                    if obis:
+                        any_ok = True
+                        self.hass.loop.call_soon_threadsafe(self._apply_obis, dev_id, obis)
+                if any_ok:
+                    if self.debug:
+                        _LOGGER.debug(
+                            "multi-chunk decode OK for %s (%d bytes, %d frames)",
+                            dev_id, len(multi_text), len(obis_frames)
+                        )
+                    self._diag.bump(dev_id, True, topic=topic, payload=payload, offset=None, had_blob=True)
+                    return
 
             if self.debug:
                 try:
