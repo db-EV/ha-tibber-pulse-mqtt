@@ -1,5 +1,19 @@
 # Changelog
 
+
+## [0.4.1]
+### Fixed
+- Skip state writes for disabled Home Assistant entities.
+  - Prevents warnings caused by updates being sent to entities that are disabled in Home Assistant.
+  - Adds an early guard in `_schedule_state_write`, covering updates triggered by `set_state`, `set_status`, and `set_meter_id`.
+- Added support for Tibber Pulse P1 devices that split a single Zlib stream across multiple protobuf Field-2 entries.
+  - Reconstructs and decompresses multi-chunk streams before OBIS decoding.
+  - Resolves decode failures and OBIS parsing errors on affected Pulse P1 devices.
+  - Automatically activates only when multiple compressed fragments are detected, preserving existing behavior for single-chunk devices.
+
+### Thanks
+- Thanks to @db-EV for the multi-chunk implementation.
+
 ## [0.4.0]
 ### Added
 - Initial DLMS/COSEM (HAN) support.
