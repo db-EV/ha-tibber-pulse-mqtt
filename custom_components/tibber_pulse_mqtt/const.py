@@ -18,6 +18,10 @@ CONF_TLS_VERSION = "tls_version"
 # Topics
 CONF_SUBSCRIBE = "subscribe_topic"
 
+# Value processing
+CONF_SIGNED_CURRENT = "signed_current"
+DEFAULT_SIGNED_CURRENT = True
+
 # Debug flags
 CONF_DEBUG_LOG_COMPONENT = "debug_log_component"
 CONF_LOG_MISSED_BASE64 = "log_missed_base64"
