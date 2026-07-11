@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.config_entries import ConfigEntry
 
-from .const import DOMAIN, CONF_LOG_MISSED_BASE64, CONF_LOG_OBIS
+from .const import DOMAIN, CONF_LOG_MISSED_BASE64, CONF_LOG_OBIS, CONF_SIGNED_CURRENT, DEFAULT_SIGNED_CURRENT
 
 try:
     from .protobuf import pulse_pb2
@@ -20,6 +20,7 @@ from .parsers.obis_text import parse_obis_text
 from .parsers.dlms_cosem import parse_dlms_cosem, find_dlms_frame_in_blob
 
 from .obis.streaming import ObisStreamManager
+from .obis.signed_current import apply_signed_current
 from .util.diagnostics import DiagnosticsRegistry
 from .ha.invoke import call_sm_threadsafe, call_sm_on_loop
 
@@ -34,6 +35,7 @@ class TibberDispatcher:
         self.entry = entry
         self.cfg = {**entry.data, **entry.options}
         self.debug = _LOGGER.isEnabledFor(logging.DEBUG)
+        self._signed_current = bool(self.cfg.get(CONF_SIGNED_CURRENT, DEFAULT_SIGNED_CURRENT))
 
         # Device state / mappings
         self._devices: Dict[str, Dict[str, Any]] = {}
@@ -344,6 +346,11 @@ class TibberDispatcher:
         if pulse_id not in self._devices:
             self._devices[pulse_id] = {"status": {}, "sensors": {}, "has_status": False}
         status = self._devices[pulse_id].get("status")
+
+        # Derive signed phase currents from directional power registers
+        # (DSMR/HAN meters report current as unsigned magnitude).
+        if self._signed_current:
+            apply_signed_current(obis)
 
         meter = obis.get("0-0:96.1.1")
         if meter:
