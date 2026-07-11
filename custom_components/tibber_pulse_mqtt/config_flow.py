@@ -26,6 +26,9 @@ from .const import (
     CONF_KEYFILE,
     CONF_TLS_VERSION,
     DEFAULT_PORT,
+    # Value processing
+    CONF_SIGNED_CURRENT,
+    DEFAULT_SIGNED_CURRENT,
     # Debug flags
     CONF_DEBUG_LOG_COMPONENT,
     CONF_LOG_MISSED_BASE64,
@@ -108,6 +111,7 @@ class TibberLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data = {
                     CONF_BROKER_MODE: "homeassistant",
                     CONF_SUBSCRIBE: user_input.get(CONF_SUBSCRIBE, DEFAULT_TOPIC),
+                    CONF_SIGNED_CURRENT: user_input.get(CONF_SIGNED_CURRENT, DEFAULT_SIGNED_CURRENT),
                     CONF_DEBUG_LOG_COMPONENT: debug_enabled,
                     CONF_LOG_MISSED_BASE64: user_input.get(CONF_LOG_MISSED_BASE64, DEFAULT_LOG_MISSED_BASE64),
                     CONF_LOG_OBIS: user_input.get(CONF_LOG_OBIS, DEFAULT_LOG_OBIS),
@@ -118,6 +122,7 @@ class TibberLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._cached_step1 = {
                 CONF_BROKER_MODE: "external",
                 CONF_SUBSCRIBE: user_input.get(CONF_SUBSCRIBE, DEFAULT_TOPIC),
+                CONF_SIGNED_CURRENT: user_input.get(CONF_SIGNED_CURRENT, DEFAULT_SIGNED_CURRENT),
                 CONF_DEBUG_LOG_COMPONENT: debug_enabled,
                 CONF_LOG_MISSED_BASE64: user_input.get(CONF_LOG_MISSED_BASE64, DEFAULT_LOG_MISSED_BASE64),
                 CONF_LOG_OBIS: user_input.get(CONF_LOG_OBIS, DEFAULT_LOG_OBIS),
@@ -128,6 +133,7 @@ class TibberLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         schema = vol.Schema({
             vol.Required(CONF_BROKER_MODE, default="homeassistant"): _broker_mode_selector(),
             vol.Required(CONF_SUBSCRIBE, default=DEFAULT_TOPIC): _text_selector(),
+            vol.Required(CONF_SIGNED_CURRENT, default=DEFAULT_SIGNED_CURRENT): _bool_toggle_selector(),
             vol.Required(CONF_DEBUG_LOG_COMPONENT, default=DEFAULT_DEBUG_LOG_COMPONENT): _bool_toggle_selector(),
             vol.Required(CONF_LOG_MISSED_BASE64, default=DEFAULT_LOG_MISSED_BASE64): _bool_toggle_selector(),
             vol.Required(CONF_LOG_OBIS, default=DEFAULT_LOG_OBIS): _bool_toggle_selector(),
@@ -203,6 +209,7 @@ class TibberLocalOptionsFlow(config_entries.OptionsFlow):
             self._step1_cache = {
                 CONF_BROKER_MODE: user_input.get(CONF_BROKER_MODE, cfg.get(CONF_BROKER_MODE, "homeassistant")),
                 CONF_SUBSCRIBE: user_input.get(CONF_SUBSCRIBE, cfg.get(CONF_SUBSCRIBE, DEFAULT_TOPIC)),
+                CONF_SIGNED_CURRENT: user_input.get(CONF_SIGNED_CURRENT, cfg.get(CONF_SIGNED_CURRENT, DEFAULT_SIGNED_CURRENT)),
                 CONF_DEBUG_LOG_COMPONENT: debug_enabled,
                 CONF_LOG_MISSED_BASE64: user_input.get(CONF_LOG_MISSED_BASE64, cfg.get(CONF_LOG_MISSED_BASE64, DEFAULT_LOG_MISSED_BASE64)),
                 CONF_LOG_OBIS: user_input.get(CONF_LOG_OBIS, cfg.get(CONF_LOG_OBIS, DEFAULT_LOG_OBIS)),
@@ -216,6 +223,7 @@ class TibberLocalOptionsFlow(config_entries.OptionsFlow):
         schema = vol.Schema({
             vol.Required(CONF_BROKER_MODE, default=cfg.get(CONF_BROKER_MODE, "homeassistant")): _broker_mode_selector(),
             vol.Required(CONF_SUBSCRIBE, default=cfg.get(CONF_SUBSCRIBE, DEFAULT_TOPIC)): _text_selector(),
+            vol.Required(CONF_SIGNED_CURRENT, default=cfg.get(CONF_SIGNED_CURRENT, DEFAULT_SIGNED_CURRENT)): _bool_toggle_selector(),
             vol.Required(CONF_DEBUG_LOG_COMPONENT, default=cfg.get(CONF_DEBUG_LOG_COMPONENT, DEFAULT_DEBUG_LOG_COMPONENT)): _bool_toggle_selector(),
             vol.Required(CONF_LOG_MISSED_BASE64, default=cfg.get(CONF_LOG_MISSED_BASE64, DEFAULT_LOG_MISSED_BASE64)): _bool_toggle_selector(),
             vol.Required(CONF_LOG_OBIS, default=cfg.get(CONF_LOG_OBIS, DEFAULT_LOG_OBIS)): _bool_toggle_selector(),
